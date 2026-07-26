@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUG状态分布</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>BUG 状态分布看板</h1>
+      <p class="subtitle">软件与固件 BUG 按优先级分布趋势追踪</p>
+    </header>
+
+    <section class="card total-card">
+      <div class="total-label">未关闭 BUG 总数</div>
+      <div class="total-value" id="totalCount">0</div>
+      <div class="total-date" id="totalDate">暂无数据</div>
+    </section>
+
+    <section class="card form-card">
+      <h2 class="card-title">数据录入</h2>
+      <div class="form-row">
+        <div class="form-group date-group">
+          <label for="dateInput">日期</label>
+          <input type="date" id="dateInput">
+        </div>
+      </div>
+
+      <div class="form-columns">
+        <div class="form-column">
+          <h3 class="column-title software-title">软件</h3>
+          <div class="form-group">
+            <label for="sw_p0_unresolved">P0 未解决</label>
+            <input type="number" id="sw_p0_unresolved" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="sw_p1_unresolved">P1 未解决</label>
+            <input type="number" id="sw_p1_unresolved" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="sw_p2_unresolved">P2 及以下未解决</label>
+            <input type="number" id="sw_p2_unresolved" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="sw_p0_pending">P0 待验证</label>
+            <input type="number" id="sw_p0_pending" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="sw_p1_pending">P1 待验证</label>
+            <input type="number" id="sw_p1_pending" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="sw_p2_pending">P2 及以下待验证</label>
+            <input type="number" id="sw_p2_pending" min="0" placeholder="0">
+          </div>
+        </div>
+
+        <div class="form-column">
+          <h3 class="column-title firmware-title">固件</h3>
+          <div class="form-group">
+            <label for="fw_p0_unresolved">P0 未解决</label>
+            <input type="number" id="fw_p0_unresolved" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="fw_p1_unresolved">P1 未解决</label>
+            <input type="number" id="fw_p1_unresolved" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="fw_p2_unresolved">P2 及以下未解决</label>
+            <input type="number" id="fw_p2_unresolved" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="fw_p0_pending">P0 待验证</label>
+            <input type="number" id="fw_p0_pending" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="fw_p1_pending">P1 待验证</label>
+            <input type="number" id="fw_p1_pending" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="fw_p2_pending">P2 及以下待验证</label>
+            <input type="number" id="fw_p2_pending" min="0" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" id="saveBtn">保存数据</button>
+        <button class="btn btn-secondary" id="resetBtn">重置表单</button>
+      </div>
+    </section>
+
+    <section class="card chart-card">
+      <h2 class="card-title">未关闭 BUG 分布趋势</h2>
+      <div class="chart-wrapper">
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="custom-legend" id="barChartLegend">
+        <div class="legend-row">
+          <span class="legend-group-title">软件</span>
+          <div class="legend-items" id="softwareLegend"></div>
+        </div>
+        <div class="legend-row">
+          <span class="legend-group-title">固件</span>
+          <div class="legend-items" id="firmwareLegend"></div>
+        </div>
+        <div class="legend-row">
+          <span class="legend-group-title">趋势</span>
+          <div class="legend-items" id="totalLegend"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="chart-row">
+      <section class="card chart-card half-card">
+        <h2 class="card-title">软件问题状态分布</h2>
+        <div class="chart-wrapper pie-wrapper">
+          <canvas id="softwarePieChart"></canvas>
+        </div>
+      </section>
+
+      <section class="card chart-card half-card">
+        <h2 class="card-title">固件问题状态分布</h2>
+        <div class="chart-wrapper pie-wrapper">
+          <canvas id="firmwarePieChart"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <section class="card history-card">
+      <h2 class="card-title">历史记录</h2>
+      <div class="history-table-wrapper">
+        <table class="history-table" id="historyTable">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>软件总数</th>
+              <th>固件总数</th>
+              <th>合计</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr class="empty-row">
+              <td colspan="5">暂无数据</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
